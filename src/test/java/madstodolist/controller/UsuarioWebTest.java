@@ -9,8 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +34,47 @@ public class UsuarioWebTest {
     // las peticiones a los endpoint.
     @MockBean
     private UsuarioService usuarioService;
+
+    @Test
+    public void listaUsuariosRegistrados() throws Exception {
+        UsuarioData ana = new UsuarioData();
+        ana.setId(1L);
+        ana.setEmail("ana@example.com");
+        UsuarioData juan = new UsuarioData();
+        juan.setId(2L);
+        juan.setEmail("juan@example.com");
+        when(usuarioService.findAll()).thenReturn(Arrays.asList(ana, juan));
+
+        mockMvc.perform(get("/registrados"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Usuarios registrados")))
+                .andExpect(content().string(containsString("Identificador")))
+                .andExpect(content().string(containsString("Correo electrónico")))
+                .andExpect(content().string(containsString("ana@example.com")))
+                .andExpect(content().string(containsString("juan@example.com")))
+                .andExpect(content().string(containsString(">1</td>")))
+                .andExpect(content().string(containsString(">2</td>")))
+                .andExpect(content().string(containsString("Iniciar sesión")))
+                .andExpect(content().string(containsString("Registrarse")));
+    }
+
+    @Test
+    public void listaUsuariosRegistradosMantieneNavbarParaUsuarioAutenticado() throws Exception {
+        UsuarioData ana = new UsuarioData();
+        ana.setId(7L);
+        ana.setEmail("ana@example.com");
+        ana.setNombre("Ana García");
+        when(usuarioService.findById(7L)).thenReturn(ana);
+        when(usuarioService.findAll()).thenReturn(Arrays.asList());
+
+        mockMvc.perform(get("/registrados").sessionAttr("idUsuarioLogeado", 7L))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ana García")))
+                .andExpect(content().string(containsString("/usuarios/7/tareas")))
+                .andExpect(content().string(containsString("Cerrar sesión")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Iniciar sesión"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Registrarse"))));
+    }
 
     @Test
     public void servicioLoginUsuarioOK() throws Exception {
