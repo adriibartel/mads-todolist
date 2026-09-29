@@ -19,12 +19,23 @@ public class HomeController {
 
     @GetMapping("/about")
     public String about(Model model) {
+        cargarUsuarioSesion(model);
+        return "about";
+    }
+
+    @GetMapping("/registrados")
+    public String usuariosRegistrados(Model model) {
+        cargarUsuarioSesion(model);
+        model.addAttribute("usuarios", usuarioService.findAll());
+        return "listaUsuarios";
+    }
+
+    private void cargarUsuarioSesion(Model model) {
         Long usuarioId = managerUserSession.usuarioLogeado();
         if (usuarioId != null) {
             UsuarioData usuario = usuarioService.findById(usuarioId);
             model.addAttribute("usuario", usuario);
         }
-        return "about";
     }
 
 }
