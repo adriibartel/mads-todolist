@@ -15,16 +15,9 @@
       <li class="nav-item" th:if="${usuarioId != null}">
         <a class="nav-link" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuarioId})}">Nueva tarea</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" th:href="@{/about}">Acerca de</a>
-      </li>
-      <li class="nav-item" th:if="${usuarioId != null}">
-        <a class="nav-link" th:href="@{/logout}">Salir</a>
-      </li>
       <li class="nav-item" th:unless="${usuarioId != null}">
         <a class="nav-link" th:href="@{/login}">Iniciar sesión</a>
       </li>
-
       <li class="nav-item" th:unless="${usuarioId != null}">
         <a class="nav-link" th:href="@{/registro}">Registrarse</a>
       </li>
