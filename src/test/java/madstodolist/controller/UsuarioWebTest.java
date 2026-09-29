@@ -9,9 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -52,10 +54,38 @@ public class UsuarioWebTest {
                 .andExpect(content().string(containsString("Correo electrónico")))
                 .andExpect(content().string(containsString("ana@example.com")))
                 .andExpect(content().string(containsString("juan@example.com")))
-                .andExpect(content().string(containsString(">1</td>")))
-                .andExpect(content().string(containsString(">2</td>")))
+                .andExpect(content().string(containsString("/registrados/1")))
+                .andExpect(content().string(containsString("/registrados/2")))
                 .andExpect(content().string(containsString("Iniciar sesión")))
                 .andExpect(content().string(containsString("Registrarse")));
+    }
+
+    @Test
+    public void descripcionUsuarioMuestraTodosLosDatosSalvoLaContrasena() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(3L);
+        usuario.setEmail("usuario@example.com");
+        usuario.setNombre("Usuario de prueba");
+        usuario.setPassword("secreto");
+        usuario.setFechaNacimiento(new SimpleDateFormat("yyyy-MM-dd").parse("1990-05-15"));
+        when(usuarioService.findById(3L)).thenReturn(usuario);
+
+        mockMvc.perform(get("/registrados/3"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Identificador")))
+                .andExpect(content().string(containsString(">3</dd>")))
+                .andExpect(content().string(containsString("usuario@example.com")))
+                .andExpect(content().string(containsString("Usuario de prueba")))
+                .andExpect(content().string(containsString("15/05/1990")))
+                .andExpect(content().string(not(containsString("secreto"))));
+    }
+
+    @Test
+    public void descripcionUsuarioInexistenteDevuelve404() throws Exception {
+        when(usuarioService.findById(99L)).thenReturn(null);
+
+        mockMvc.perform(get("/registrados/99"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
