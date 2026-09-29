@@ -4,6 +4,7 @@
 <head th:replace="fragments :: head (titulo='Login')"></head>
 
 <body>
+<nav th:replace="navBar :: navbar(${usuario.id}, ${usuario.nombre})"></nav>
 <div class="container-fluid">
 
     <div class="row mt-3">
@@ -33,8 +34,6 @@
                 </tr>
                 </tbody>
             </table>
-            <p><a class="btn btn-primary" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuario.id})}"> Nueva tarea</a>
-            <a class="btn btn-link" href="/logout">Salir</a></p>
         </div>
     </div>
     <div class="row mt-2">

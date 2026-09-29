@@ -82,6 +82,7 @@ public class TareaController {
         comprobarUsuarioLogeado(tarea.getUsuarioId());
 
         model.addAttribute("tarea", tarea);
+        model.addAttribute("usuario", usuarioService.findById(tarea.getUsuarioId()));
         tareaData.setTitulo(tarea.getTitulo());
         return "formEditarTarea";
     }
@@ -119,4 +120,3 @@ public class TareaController {
         return "";
     }
 }
-
