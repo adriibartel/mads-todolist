@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light" th:fragment="navbar(usuarioId)">
+  <a class="navbar-brand" th:href="@{/about}">ToDoList</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir navegación">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item" th:if="${usuarioId != null}">
+        <a class="nav-link" th:href="@{/usuarios/{id}/tareas(id=${usuarioId})}">Tareas</a>
+      </li>
+      <li class="nav-item" th:if="${usuarioId != null}">
+        <a class="nav-link" th:href="@{/usuarios/{id}/tareas/nueva(id=${usuarioId})}">Nueva tarea</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/about}">Acerca de</a>
+      </li>
+      <li class="nav-item" th:if="${usuarioId != null}">
+        <a class="nav-link" th:href="@{/logout}">Salir</a>
+      </li>
+      <li class="nav-item" th:unless="${usuarioId != null}">
+        <a class="nav-link" th:href="@{/login}">Iniciar sesión</a>
+      </li>
+
+      <li class="nav-item" th:unless="${usuarioId != null}">
+        <a class="nav-link" th:href="@{/registro}">Registrarse</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</body>
+</html>
