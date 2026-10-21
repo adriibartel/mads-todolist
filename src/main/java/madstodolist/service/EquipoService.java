@@ -84,4 +84,18 @@ public class EquipoService {
                 .sorted(Comparator.comparing(EquipoData::getNombre))
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void modificarNombreEquipo(Long id, String nombre) {
+        Equipo equipo = equipoRepository.findById(id)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + id));
+        equipo.setNombre(nombre);
+    }
+
+    @Transactional
+    public void eliminarEquipo(Long id) {
+        Equipo equipo = equipoRepository.findById(id)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + id));
+        equipoRepository.delete(equipo);
+    }
 }
