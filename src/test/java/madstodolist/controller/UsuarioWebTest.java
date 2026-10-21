@@ -45,9 +45,10 @@ public class UsuarioWebTest {
         UsuarioData juan = new UsuarioData();
         juan.setId(2L);
         juan.setEmail("juan@example.com");
+        when(usuarioService.findById(1L)).thenReturn(ana);
         when(usuarioService.findAll()).thenReturn(Arrays.asList(ana, juan));
 
-        mockMvc.perform(get("/registrados"))
+        mockMvc.perform(get("/registrados").sessionAttr("idUsuarioLogeado", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Usuarios registrados")))
                 .andExpect(content().string(containsString("Identificador")))
@@ -55,22 +56,30 @@ public class UsuarioWebTest {
                 .andExpect(content().string(containsString("ana@example.com")))
                 .andExpect(content().string(containsString("juan@example.com")))
                 .andExpect(content().string(containsString("/registrados/1")))
-                .andExpect(content().string(containsString("/registrados/2")))
-                .andExpect(content().string(containsString("Iniciar sesión")))
-                .andExpect(content().string(containsString("Registrarse")));
+                .andExpect(content().string(containsString("/registrados/2")));
+    }
+
+    @Test
+    public void listaUsuariosRegistradosRedirigeSiNoHayUsuarioAutenticado() throws Exception {
+        mockMvc.perform(get("/registrados"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
     }
 
     @Test
     public void descripcionUsuarioMuestraTodosLosDatosSalvoLaContrasena() throws Exception {
+        UsuarioData usuarioSesion = new UsuarioData();
+        usuarioSesion.setId(7L);
         UsuarioData usuario = new UsuarioData();
         usuario.setId(3L);
         usuario.setEmail("usuario@example.com");
         usuario.setNombre("Usuario de prueba");
         usuario.setPassword("secreto");
         usuario.setFechaNacimiento(new SimpleDateFormat("yyyy-MM-dd").parse("1990-05-15"));
+        when(usuarioService.findById(7L)).thenReturn(usuarioSesion);
         when(usuarioService.findById(3L)).thenReturn(usuario);
 
-        mockMvc.perform(get("/registrados/3"))
+        mockMvc.perform(get("/registrados/3").sessionAttr("idUsuarioLogeado", 7L))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Identificador")))
                 .andExpect(content().string(containsString(">3</dd>")))
@@ -81,10 +90,20 @@ public class UsuarioWebTest {
     }
 
     @Test
+    public void descripcionUsuarioRedirigeSiNoHayUsuarioAutenticado() throws Exception {
+        mockMvc.perform(get("/registrados/3"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+    }
+
+    @Test
     public void descripcionUsuarioInexistenteDevuelve404() throws Exception {
+        UsuarioData usuarioSesion = new UsuarioData();
+        usuarioSesion.setId(7L);
+        when(usuarioService.findById(7L)).thenReturn(usuarioSesion);
         when(usuarioService.findById(99L)).thenReturn(null);
 
-        mockMvc.perform(get("/registrados/99"))
+        mockMvc.perform(get("/registrados/99").sessionAttr("idUsuarioLogeado", 7L))
                 .andExpect(status().isNotFound());
     }
 
