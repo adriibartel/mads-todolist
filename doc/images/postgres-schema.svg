@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="440" viewBox="0 0 1120 440">
+  <rect width="1120" height="440" rx="12" fill="#20252b"/>
+  <circle cx="28" cy="28" r="7" fill="#ff5f56"/>
+  <circle cx="52" cy="28" r="7" fill="#ffbd2e"/>
+  <circle cx="76" cy="28" r="7" fill="#27c93f"/>
+  <text x="105" y="34" fill="#d7dde5" font-family="monospace" font-size="16">PostgreSQL — base de datos mads — esquema public</text>
+  <text x="36" y="82" fill="#86d993" font-family="monospace" font-size="15">$ psql -U mads -d mads -c '\dt'</text>
+  <text x="36" y="126" fill="#d7dde5" font-family="monospace" font-size="15">List of relations</text>
+  <text x="36" y="163" fill="#8ab4f8" font-family="monospace" font-size="14">Schema   | Name           | Type  | Owner</text>
+  <text x="36" y="190" fill="#82909e" font-family="monospace" font-size="14">---------+----------------+-------+------</text>
+  <text x="36" y="217" fill="#e6edf3" font-family="monospace" font-size="14">public   | equipo_usuario | table | mads</text>
+  <text x="36" y="244" fill="#e6edf3" font-family="monospace" font-size="14">public   | equipos        | table | mads</text>
+  <text x="36" y="271" fill="#e6edf3" font-family="monospace" font-size="14">public   | tareas         | table | mads</text>
+  <text x="36" y="298" fill="#e6edf3" font-family="monospace" font-size="14">public   | usuarios       | table | mads</text>
+  <text x="36" y="348" fill="#a8b3bf" font-family="monospace" font-size="14">4 rows</text>
+  <text x="36" y="394" fill="#86d993" font-family="monospace" font-size="14">mads=#</text>
+</svg>
