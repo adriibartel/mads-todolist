@@ -18,6 +18,8 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -87,6 +89,87 @@ public class EquipoControllerTest {
                 .andExpect(redirectedUrl("/equipos"));
 
         verify(equipoService).crearEquipo("Proyecto nuevo");
+    }
+
+    @Test
+    public void administradorPuedeCambiarNombreDeEquipo() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(usuario(7L, true));
+
+        mockMvc.perform(post("/equipos/4/nombre").param("nombre", "Proyecto renovado"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        verify(equipoService).cambiarNombreEquipo(4L, "Proyecto renovado");
+    }
+
+    @Test
+    public void administradorPuedeEliminarEquipo() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(usuario(7L, true));
+
+        mockMvc.perform(post("/equipos/4/eliminar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        verify(equipoService).eliminarEquipo(4L);
+    }
+
+    @Test
+    public void usuarioNoAdministradorNoPuedeGestionarEquipos() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(8L);
+        when(usuarioService.findById(8L)).thenReturn(usuario(8L, false));
+
+        mockMvc.perform(post("/equipos/4/nombre").param("nombre", "No permitido"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/equipos/4/eliminar"))
+                .andExpect(status().isForbidden());
+
+        verify(equipoService, never()).cambiarNombreEquipo(4L, "No permitido");
+        verify(equipoService, never()).eliminarEquipo(4L);
+    }
+
+    @Test
+    public void accionesDeGestionRedirigenALoginSiNoHaySesion() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(null);
+
+        mockMvc.perform(post("/equipos/4/nombre").param("nombre", "Proyecto"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+        mockMvc.perform(post("/equipos/4/eliminar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+    }
+
+    @Test
+    public void administracionDeEquipoDevuelve404SiNoExiste() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(usuario(7L, true));
+        doThrow(new EquipoServiceException("No existe el equipo 99"))
+                .when(equipoService).cambiarNombreEquipo(99L, "Proyecto");
+        doThrow(new EquipoServiceException("No existe el equipo 99"))
+                .when(equipoService).eliminarEquipo(99L);
+
+        mockMvc.perform(post("/equipos/99/nombre").param("nombre", "Proyecto"))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(post("/equipos/99/eliminar"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void listaEquiposMuestraAccionesDeGestionSoloAlAdministrador() throws Exception {
+        EquipoData equipo = new EquipoData();
+        equipo.setId(4L);
+        equipo.setNombre("Alpha");
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(usuario(7L, true));
+        when(equipoService.findAllOrdenadoPorNombre()).thenReturn(Collections.singletonList(equipo));
+        when(equipoService.equiposUsuario(7L)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/equipos"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/equipos/4/nombre")))
+                .andExpect(content().string(containsString("/equipos/4/eliminar")));
     }
 
     @Test
@@ -168,5 +251,13 @@ public class EquipoControllerTest {
                 .andExpect(content().string(containsString("Miembros de Alpha")))
                 .andExpect(content().string(containsString("miembro@example.com")))
                 .andExpect(content().string(containsString("Miembro")));
+    }
+
+    private UsuarioData usuario(Long id, boolean administrador) {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(id);
+        usuario.setAdministrador(administrador);
+        usuario.setNombre("Usuario");
+        return usuario;
     }
 }

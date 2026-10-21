@@ -15,6 +15,7 @@
         <tr>
             <th>Equipo</th>
             <th>Acción</th>
+            <th th:if="${usuario.administrador}">Administración</th>
         </tr>
         </thead>
         <tbody>
@@ -28,6 +29,16 @@
                 <form th:unless="${#lists.contains(equiposUsuario, equipo)}" method="post"
                       th:action="@{/equipos/{id}/miembros(id=${equipo.id})}">
                     <button type="submit" class="btn btn-success">Unirme</button>
+                </form>
+            </td>
+            <td th:if="${usuario.administrador}">
+                <form method="post" class="form-inline mb-2"
+                      th:action="@{/equipos/{id}/nombre(id=${equipo.id})}">
+                    <input name="nombre" class="form-control mr-2" th:value="${equipo.nombre}" required/>
+                    <button type="submit" class="btn btn-primary">Cambiar nombre</button>
+                </form>
+                <form method="post" th:action="@{/equipos/{id}/eliminar(id=${equipo.id})}">
+                    <button type="submit" class="btn btn-danger">Eliminar equipo</button>
                 </form>
             </td>
         </tr>
