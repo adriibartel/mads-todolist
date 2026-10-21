@@ -40,6 +40,16 @@ public class EquipoService {
         equipo.setNombre(nombre);
     }
 
+    @Transactional
+    public void eliminarEquipo(Long idEquipo) {
+        Equipo equipo = equipoRepository.findById(idEquipo)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + idEquipo));
+        while (!equipo.getUsuarios().isEmpty()) {
+            equipo.removeUsuario(equipo.getUsuarios().iterator().next());
+        }
+        equipoRepository.delete(equipo);
+    }
+
     @Transactional(readOnly = true)
     public EquipoData recuperarEquipo(Long id) {
         Equipo equipo = equipoRepository.findById(id)
