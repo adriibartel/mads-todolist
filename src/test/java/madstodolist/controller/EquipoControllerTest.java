@@ -18,8 +18,10 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -61,6 +63,7 @@ public class EquipoControllerTest {
         when(managerUserSession.usuarioLogeado()).thenReturn(1L);
         when(usuarioService.findById(1L)).thenReturn(usuario);
         when(equipoService.findAllOrdenadoPorNombre()).thenReturn(Arrays.asList(equipoA, equipoB));
+        when(equipoService.equiposUsuario(1L)).thenReturn(Collections.singletonList(equipoB));
 
         mockMvc.perform(get("/equipos"))
                 .andExpect(status().isOk())
@@ -69,7 +72,58 @@ public class EquipoControllerTest {
                 .andExpect(content().string(containsString("Beta")))
                 .andExpect(content().string(containsString("/equipos/2/usuarios")))
                 .andExpect(content().string(containsString("/equipos/1/usuarios")))
-                .andExpect(content().string(stringContainsInOrder("Alpha", "Beta")));
+                .andExpect(content().string(stringContainsInOrder("Alpha", "Beta")))
+                .andExpect(content().string(containsString("Abandonar")))
+                .andExpect(content().string(containsString("Unirme")))
+                .andExpect(content().string(containsString("Crear equipo")));
+    }
+
+    @Test
+    public void crearEquipoRegistraNombreYRedirigeAlListado() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(5L);
+
+        mockMvc.perform(post("/equipos").param("nombre", "Proyecto nuevo"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        verify(equipoService).crearEquipo("Proyecto nuevo");
+    }
+
+    @Test
+    public void usuarioPuedeUnirseAlEquipoPropioDeLaSesion() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(5L);
+
+        mockMvc.perform(post("/equipos/2/miembros"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        verify(equipoService).añadirUsuarioAEquipo(2L, 5L);
+    }
+
+    @Test
+    public void usuarioPuedeAbandonarElEquipoPropioDeLaSesion() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(5L);
+
+        mockMvc.perform(post("/equipos/2/miembros/salir"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        verify(equipoService).quitarUsuarioDeEquipo(2L, 5L);
+    }
+
+    @Test
+    public void accionesDePertenenciaRedirigenALoginSiNoHaySesion() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(null);
+
+        mockMvc.perform(post("/equipos/2/miembros"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+        mockMvc.perform(post("/equipos/2/miembros/salir"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+        mockMvc.perform(post("/equipos").param("nombre", "Proyecto"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
     }
 
     @Test

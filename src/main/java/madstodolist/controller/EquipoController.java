@@ -12,7 +12,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @Controller
 public class EquipoController {
@@ -34,8 +38,39 @@ public class EquipoController {
         }
         UsuarioData usuario = usuarioService.findById(usuarioId);
         model.addAttribute("usuario", usuario);
-        model.addAttribute("equipos", equipoService.findAllOrdenadoPorNombre());
+        List<EquipoData> equipos = equipoService.findAllOrdenadoPorNombre();
+        model.addAttribute("equipos", equipos);
+        model.addAttribute("equiposUsuario", equipoService.equiposUsuario(usuarioId));
         return "listaEquipos";
+    }
+
+    @PostMapping("/equipos")
+    public String crearEquipo(@RequestParam String nombre) {
+        if (managerUserSession.usuarioLogeado() == null) {
+            return "redirect:/login";
+        }
+        equipoService.crearEquipo(nombre);
+        return "redirect:/equipos";
+    }
+
+    @PostMapping("/equipos/{id}/miembros")
+    public String unirseAEquipo(@PathVariable Long id) {
+        Long usuarioId = managerUserSession.usuarioLogeado();
+        if (usuarioId == null) {
+            return "redirect:/login";
+        }
+        cambiarPertenencia(id, usuarioId, true);
+        return "redirect:/equipos";
+    }
+
+    @PostMapping("/equipos/{id}/miembros/salir")
+    public String salirDeEquipo(@PathVariable Long id) {
+        Long usuarioId = managerUserSession.usuarioLogeado();
+        if (usuarioId == null) {
+            return "redirect:/login";
+        }
+        cambiarPertenencia(id, usuarioId, false);
+        return "redirect:/equipos";
     }
 
     @GetMapping("/equipos/{id}/usuarios")
@@ -54,5 +89,17 @@ public class EquipoController {
         model.addAttribute("equipo", equipo);
         model.addAttribute("usuarios", equipoService.usuariosEquipo(id));
         return "usuariosEquipo";
+    }
+
+    private void cambiarPertenencia(Long equipoId, Long usuarioId, boolean unirse) {
+        try {
+            if (unirse) {
+                equipoService.añadirUsuarioAEquipo(equipoId, usuarioId);
+            } else {
+                equipoService.quitarUsuarioDeEquipo(equipoId, usuarioId);
+            }
+        } catch (EquipoServiceException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
     }
 }
