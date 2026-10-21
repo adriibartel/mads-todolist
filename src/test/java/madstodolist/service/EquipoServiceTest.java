@@ -1,6 +1,7 @@
 package madstodolist.service;
 
 import madstodolist.dto.EquipoData;
+import madstodolist.dto.UsuarioData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,9 @@ public class EquipoServiceTest {
 
     @Autowired
     private EquipoService equipoService;
+
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Test
     public void crearRecuperarEquipo() {
@@ -37,5 +41,20 @@ public class EquipoServiceTest {
         assertThat(equipos).hasSize(2);
         assertThat(equipos.get(0).getNombre()).isEqualTo("Proyecto AAA");
         assertThat(equipos.get(1).getNombre()).isEqualTo("Proyecto BBB");
+    }
+
+    @Test
+    public void añadirUsuarioAEquipo() {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        EquipoData equipo = equipoService.crearEquipo("Proyecto 1");
+
+        equipoService.añadirUsuarioAEquipo(equipo.getId(), usuario.getId());
+
+        List<UsuarioData> usuarios = equipoService.usuariosEquipo(equipo.getId());
+        assertThat(usuarios).hasSize(1);
+        assertThat(usuarios.get(0).getEmail()).isEqualTo("user@ua");
     }
 }
