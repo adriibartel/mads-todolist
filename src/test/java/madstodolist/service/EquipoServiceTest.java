@@ -103,6 +103,22 @@ public class EquipoServiceTest {
     }
 
     @Test
+    public void eliminarEquipoEliminaTambienSuRelacionConUsuarios() {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        EquipoData equipo = equipoService.crearEquipo("Proyecto a eliminar");
+        equipoService.añadirUsuarioAEquipo(equipo.getId(), usuario.getId());
+
+        equipoService.eliminarEquipo(equipo.getId());
+
+        assertThatThrownBy(() -> equipoService.recuperarEquipo(equipo.getId()))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThat(equipoService.equiposUsuario(usuario.getId())).isEmpty();
+    }
+
+    @Test
     public void comprobarExcepciones() {
         assertThatThrownBy(() -> equipoService.recuperarEquipo(1L))
                 .isInstanceOf(EquipoServiceException.class);
