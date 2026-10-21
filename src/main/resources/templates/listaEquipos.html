@@ -16,6 +16,7 @@
             <th>Identificador</th>
             <th>Nombre</th>
             <th th:if="${usuario != null}">Pertenencia</th>
+            <th th:if="${administrador}">Gestión</th>
         </tr>
         </thead>
         <tbody>
@@ -30,6 +31,16 @@
                 <form th:unless="${equiposUsuario.contains(equipo)}" method="post"
                       th:action="@{/equipos/{id}/usuarios(id=${equipo.id})}">
                     <button class="btn btn-outline-primary btn-sm" type="submit">Unirme</button>
+                </form>
+            </td>
+            <td th:if="${administrador}">
+                <form class="form-inline mb-2" method="post"
+                      th:action="@{/equipos/{id}/nombre(id=${equipo.id})}">
+                    <input class="form-control form-control-sm mr-2" name="nombre" th:value="${equipo.nombre}" required>
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">Cambiar nombre</button>
+                </form>
+                <form method="post" th:action="@{/equipos/{id}/eliminar(id=${equipo.id})}">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Eliminar equipo</button>
                 </form>
             </td>
         </tr>

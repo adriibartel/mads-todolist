@@ -132,4 +132,65 @@ public class EquipoControllerTest {
 
         verifyNoInteractions(equipoService);
     }
+
+    @Test
+    public void administradorPuedeCambiarNombreEquipo() throws Exception {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setId(7L);
+        administrador.setAdministrador(true);
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(administrador);
+
+        mockMvc.perform(post("/equipos/1/nombre").param("nombre", "Proyecto renovado"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        verify(equipoService).modificarNombreEquipo(1L, "Proyecto renovado");
+    }
+
+    @Test
+    public void administradorPuedeEliminarEquipo() throws Exception {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setAdministrador(true);
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(administrador);
+
+        mockMvc.perform(post("/equipos/1/eliminar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        verify(equipoService).eliminarEquipo(1L);
+    }
+
+    @Test
+    public void usuarioSinPermisosNoPuedeEliminarEquipo() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setAdministrador(false);
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(usuario);
+
+        mockMvc.perform(post("/equipos/1/eliminar"))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(equipoService);
+    }
+
+    @Test
+    public void administradorVeControlesDeGestionEnListado() throws Exception {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setId(7L);
+        administrador.setAdministrador(true);
+        EquipoData equipo = new EquipoData();
+        equipo.setId(1L);
+        equipo.setNombre("Proyecto 1");
+        when(managerUserSession.usuarioLogeado()).thenReturn(7L);
+        when(usuarioService.findById(7L)).thenReturn(administrador);
+        when(equipoService.findAllOrdenadoPorNombre()).thenReturn(Collections.singletonList(equipo));
+        when(equipoService.equiposUsuario(7L)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/equipos"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Cambiar nombre")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Eliminar equipo")));
+    }
 }
