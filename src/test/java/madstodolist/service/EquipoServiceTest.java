@@ -78,6 +78,21 @@ public class EquipoServiceTest {
     }
 
     @Test
+    public void quitarUsuarioDeEquipoActualizaAmbosLadosDeLaRelacion() {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        EquipoData equipo = equipoService.crearEquipo("Proyecto 1");
+        equipoService.añadirUsuarioAEquipo(equipo.getId(), usuario.getId());
+
+        equipoService.quitarUsuarioDeEquipo(equipo.getId(), usuario.getId());
+
+        assertThat(equipoService.usuariosEquipo(equipo.getId())).isEmpty();
+        assertThat(equipoService.equiposUsuario(usuario.getId())).isEmpty();
+    }
+
+    @Test
     public void comprobarExcepciones() {
         assertThatThrownBy(() -> equipoService.recuperarEquipo(1L))
                 .isInstanceOf(EquipoServiceException.class);
