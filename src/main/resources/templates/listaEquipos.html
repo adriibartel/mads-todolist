@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments :: head (titulo='Equipos')"></head>
+<body>
+<nav th:replace="navBar :: navbar(${usuario != null ? usuario.id : null}, ${usuario != null ? usuario.nombre : null})"></nav>
+<div class="container-fluid">
+    <h1 class="mt-3">Equipos</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Equipo</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="equipo : ${equipos}">
+            <td><a th:href="@{/equipos/{id}/usuarios(id=${equipo.id})}" th:text="${equipo.nombre}"></a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div th:replace="fragments::javascript"></div>
+</body>
+</html>
