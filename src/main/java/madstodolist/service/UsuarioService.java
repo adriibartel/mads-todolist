@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -77,8 +78,6 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public List<UsuarioData> findAll() {
         List<Usuario> usuarios = (List<Usuario>) usuarioRepository.findAll();
-        return usuarios.stream()
-                .map(usuario -> modelMapper.map(usuario, UsuarioData.class))
-                .toList();
+        return usuarios.stream().map(usuario -> modelMapper.map(usuario, UsuarioData.class)).collect(Collectors.toList());
     }
 }
