@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -74,5 +76,16 @@ public class EquipoTest {
         assertThat(usuarioBD).isNotNull();
         assertThat(equipo.getUsuarios()).hasSize(1).contains(usuario);
         assertThat(usuario.getEquipos()).hasSize(1).contains(equipo);
+    }
+
+    @Test
+    @Transactional
+    public void comprobarFindAll() {
+        equipoRepository.save(new Equipo("Proyecto 2"));
+        equipoRepository.save(new Equipo("Proyecto 3"));
+
+        List<Equipo> equipos = equipoRepository.findAll();
+
+        assertThat(equipos).hasSize(2);
     }
 }
