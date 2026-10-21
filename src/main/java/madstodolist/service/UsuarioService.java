@@ -46,6 +46,8 @@ public class UsuarioService {
         Optional<Usuario> usuarioBD = usuarioRepository.findByEmail(usuario.getEmail());
         if (usuarioBD.isPresent())
             throw new UsuarioServiceException("El usuario " + usuario.getEmail() + " ya está registrado");
+        else if (usuario.isAdministrador() && usuarioRepository.existsByAdministradorTrue())
+            throw new UsuarioServiceException("Ya existe un usuario administrador");
         else if (usuario.getEmail() == null)
             throw new UsuarioServiceException("El usuario no tiene email");
         else if (usuario.getPassword() == null)
@@ -79,5 +81,10 @@ public class UsuarioService {
     public List<UsuarioData> findAll() {
         List<Usuario> usuarios = (List<Usuario>) usuarioRepository.findAll();
         return usuarios.stream().map(usuario -> modelMapper.map(usuario, UsuarioData.class)).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean administradorExiste() {
+        return usuarioRepository.existsByAdministradorTrue();
     }
 }
