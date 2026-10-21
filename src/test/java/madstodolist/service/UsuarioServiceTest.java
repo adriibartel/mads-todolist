@@ -59,6 +59,26 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void servicioLoginUsuarioBloqueado() {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("bloqueado@ua");
+        usuario.setPassword("123");
+        Long usuarioId = usuarioService.registrar(usuario).getId();
+
+        UsuarioData usuarioBloqueado = usuarioService.alternarBloqueo(usuarioId);
+
+        assertThat(usuarioBloqueado.isBloqueado()).isTrue();
+        assertThat(usuarioService.login("bloqueado@ua", "123"))
+                .isEqualTo(UsuarioService.LoginStatus.USER_BLOCKED);
+        assertThat(usuarioService.login("bloqueado@ua", "incorrecta"))
+                .isEqualTo(UsuarioService.LoginStatus.ERROR_PASSWORD);
+
+        usuarioService.alternarBloqueo(usuarioId);
+        assertThat(usuarioService.login("bloqueado@ua", "123"))
+                .isEqualTo(UsuarioService.LoginStatus.LOGIN_OK);
+    }
+
+    @Test
     public void servicioRegistroUsuario() {
         // WHEN
         // Registramos un usuario con un e-mail no existente en la base de datos,
@@ -134,6 +154,25 @@ public class UsuarioServiceTest {
 
         UsuarioData usuarioBD = usuarioService.findById(usuarioNuevo.getId());
         assertThat(usuarioBD).isEqualTo(usuarioNuevo);
+    }
+
+    @Test
+    public void servicioRegistroPermiteUnSoloAdministrador() {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setEmail("admin@ua");
+        administrador.setPassword("123");
+        administrador.setAdministrador(true);
+        usuarioService.registrar(administrador);
+
+        UsuarioData segundoAdministrador = new UsuarioData();
+        segundoAdministrador.setEmail("otro-admin@ua");
+        segundoAdministrador.setPassword("456");
+        segundoAdministrador.setAdministrador(true);
+        usuarioService.registrar(segundoAdministrador);
+
+        assertThat(usuarioService.findByEmail("admin@ua").isAdministrador()).isTrue();
+        assertThat(usuarioService.findByEmail("otro-admin@ua").isAdministrador()).isFalse();
+        assertThat(usuarioService.existeAdministrador()).isTrue();
     }
 
     @Test

@@ -19,7 +19,7 @@ public class UsuarioService {
 
     Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
-    public enum LoginStatus {LOGIN_OK, USER_NOT_FOUND, ERROR_PASSWORD}
+    public enum LoginStatus {LOGIN_OK, USER_NOT_FOUND, ERROR_PASSWORD, USER_BLOCKED}
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -33,9 +33,16 @@ public class UsuarioService {
             return LoginStatus.USER_NOT_FOUND;
         } else if (!usuario.get().getPassword().equals(password)) {
             return LoginStatus.ERROR_PASSWORD;
+        } else if (usuario.get().isBloqueado()) {
+            return LoginStatus.USER_BLOCKED;
         } else {
             return LoginStatus.LOGIN_OK;
         }
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existeAdministrador() {
+        return usuarioRepository.existsByAdministradorTrue();
     }
 
     // Se añade un usuario en la aplicación.
@@ -52,6 +59,7 @@ public class UsuarioService {
             throw new UsuarioServiceException("El usuario no tiene password");
         else {
             Usuario usuarioNuevo = modelMapper.map(usuario, Usuario.class);
+            usuarioNuevo.setAdministrador(usuario.isAdministrador() && !existeAdministrador());
             usuarioNuevo = usuarioRepository.save(usuarioNuevo);
             return modelMapper.map(usuarioNuevo, UsuarioData.class);
         }
@@ -79,5 +87,13 @@ public class UsuarioService {
     public List<UsuarioData> findAll() {
         List<Usuario> usuarios = (List<Usuario>) usuarioRepository.findAll();
         return usuarios.stream().map(usuario -> modelMapper.map(usuario, UsuarioData.class)).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UsuarioData alternarBloqueo(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        if (usuario == null) return null;
+        usuario.setBloqueado(!usuario.isBloqueado());
+        return modelMapper.map(usuario, UsuarioData.class);
     }
 }
