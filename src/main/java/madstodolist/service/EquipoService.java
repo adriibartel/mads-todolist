@@ -33,6 +33,23 @@ public class EquipoService {
         return modelMapper.map(equipoRepository.save(equipo), EquipoData.class);
     }
 
+    @Transactional
+    public void cambiarNombreEquipo(Long idEquipo, String nombre) {
+        Equipo equipo = equipoRepository.findById(idEquipo)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + idEquipo));
+        equipo.setNombre(nombre);
+    }
+
+    @Transactional
+    public void eliminarEquipo(Long idEquipo) {
+        Equipo equipo = equipoRepository.findById(idEquipo)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + idEquipo));
+        while (!equipo.getUsuarios().isEmpty()) {
+            equipo.removeUsuario(equipo.getUsuarios().iterator().next());
+        }
+        equipoRepository.delete(equipo);
+    }
+
     @Transactional(readOnly = true)
     public EquipoData recuperarEquipo(Long id) {
         Equipo equipo = equipoRepository.findById(id)

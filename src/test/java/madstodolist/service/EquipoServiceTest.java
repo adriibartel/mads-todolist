@@ -93,6 +93,32 @@ public class EquipoServiceTest {
     }
 
     @Test
+    public void cambiarNombreEquipoActualizaElNombreRecuperado() {
+        EquipoData equipo = equipoService.crearEquipo("Proyecto anterior");
+
+        equipoService.cambiarNombreEquipo(equipo.getId(), "Proyecto actual");
+
+        assertThat(equipoService.recuperarEquipo(equipo.getId()).getNombre())
+                .isEqualTo("Proyecto actual");
+    }
+
+    @Test
+    public void eliminarEquipoEliminaTambienSuRelacionConUsuarios() {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        EquipoData equipo = equipoService.crearEquipo("Proyecto a eliminar");
+        equipoService.añadirUsuarioAEquipo(equipo.getId(), usuario.getId());
+
+        equipoService.eliminarEquipo(equipo.getId());
+
+        assertThatThrownBy(() -> equipoService.recuperarEquipo(equipo.getId()))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThat(equipoService.equiposUsuario(usuario.getId())).isEmpty();
+    }
+
+    @Test
     public void comprobarExcepciones() {
         assertThatThrownBy(() -> equipoService.recuperarEquipo(1L))
                 .isInstanceOf(EquipoServiceException.class);
