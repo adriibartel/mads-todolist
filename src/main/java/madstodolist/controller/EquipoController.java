@@ -53,6 +53,36 @@ public class EquipoController {
         return "redirect:/equipos";
     }
 
+    @PostMapping("/equipos/{id}/nombre")
+    public String cambiarNombreEquipo(@PathVariable Long id, @RequestParam String nombre) {
+        Long usuarioId = managerUserSession.usuarioLogeado();
+        if (usuarioId == null) {
+            return "redirect:/login";
+        }
+        usuarioAdministrador(usuarioId);
+        try {
+            equipoService.cambiarNombreEquipo(id, nombre);
+        } catch (EquipoServiceException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+        return "redirect:/equipos";
+    }
+
+    @PostMapping("/equipos/{id}/eliminar")
+    public String eliminarEquipo(@PathVariable Long id) {
+        Long usuarioId = managerUserSession.usuarioLogeado();
+        if (usuarioId == null) {
+            return "redirect:/login";
+        }
+        usuarioAdministrador(usuarioId);
+        try {
+            equipoService.eliminarEquipo(id);
+        } catch (EquipoServiceException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+        return "redirect:/equipos";
+    }
+
     @PostMapping("/equipos/{id}/miembros")
     public String unirseAEquipo(@PathVariable Long id) {
         Long usuarioId = managerUserSession.usuarioLogeado();
@@ -101,5 +131,13 @@ public class EquipoController {
         } catch (EquipoServiceException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
         }
+    }
+
+    private UsuarioData usuarioAdministrador(Long usuarioId) {
+        UsuarioData usuario = usuarioService.findById(usuarioId);
+        if (usuario == null || !usuario.isAdministrador()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos suficientes");
+        }
+        return usuario;
     }
 }
