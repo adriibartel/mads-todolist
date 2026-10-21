@@ -3,6 +3,7 @@ package madstodolist.controller;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.UsuarioService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,8 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -135,6 +138,7 @@ public class UsuarioWebTest {
         UsuarioData anaGarcia = new UsuarioData();
         anaGarcia.setNombre("Ana García");
         anaGarcia.setId(1L);
+        anaGarcia.setAdministrador(false);
 
         when(usuarioService.login("ana.garcia@gmail.com", "12345678"))
                 .thenReturn(UsuarioService.LoginStatus.LOGIN_OK);
@@ -151,6 +155,69 @@ public class UsuarioWebTest {
                         .param("password", "12345678"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/usuarios/1/tareas"));
+    }
+
+    @Test
+    public void servicioLoginAdministradorRedirigeAlListadoDeUsuarios() throws Exception {
+        UsuarioData admin = new UsuarioData();
+        admin.setId(1L);
+        admin.setAdministrador(true);
+        when(usuarioService.login("admin@example.com", "12345678"))
+                .thenReturn(UsuarioService.LoginStatus.LOGIN_OK);
+        when(usuarioService.findByEmail("admin@example.com")).thenReturn(admin);
+
+        mockMvc.perform(post("/login")
+                        .param("eMail", "admin@example.com")
+                        .param("password", "12345678"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/registrados"));
+    }
+
+    @Test
+    public void formularioRegistroMuestraCheckboxAdministradorCuandoAunNoExisteAdmin() throws Exception {
+        when(usuarioService.existeAdministrador()).thenReturn(false);
+
+        mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Registrarse como administrador")));
+    }
+
+    @Test
+    public void formularioRegistroOcultaCheckboxAdministradorSiYaExisteAdmin() throws Exception {
+        when(usuarioService.existeAdministrador()).thenReturn(true);
+
+        mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Registrarse como administrador"))));
+    }
+
+    @Test
+    public void formularioRegistroMantieneCheckboxAlMostrarErroresDeValidacion() throws Exception {
+        when(usuarioService.existeAdministrador()).thenReturn(false);
+
+        mockMvc.perform(post("/registro")
+                        .param("email", "correo-invalido")
+                        .param("password", "123")
+                        .param("administrador", "true"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("formRegistro"))
+                .andExpect(content().string(containsString("Registrarse como administrador")));
+    }
+
+    @Test
+    public void registroEnvioCheckboxAdministrador() throws Exception {
+        when(usuarioService.existeAdministrador()).thenReturn(false);
+
+        mockMvc.perform(post("/registro")
+                        .param("email", "admin@example.com")
+                        .param("password", "123")
+                        .param("administrador", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+
+        ArgumentCaptor<UsuarioData> usuarioCaptor = ArgumentCaptor.forClass(UsuarioData.class);
+        verify(usuarioService).registrar(usuarioCaptor.capture());
+        assertThat(usuarioCaptor.getValue().isAdministrador()).isTrue();
     }
 
     @Test

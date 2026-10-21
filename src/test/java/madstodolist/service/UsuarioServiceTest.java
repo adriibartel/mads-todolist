@@ -137,6 +137,25 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void servicioRegistroPermiteUnSoloAdministrador() {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setEmail("admin@ua");
+        administrador.setPassword("123");
+        administrador.setAdministrador(true);
+        usuarioService.registrar(administrador);
+
+        UsuarioData segundoAdministrador = new UsuarioData();
+        segundoAdministrador.setEmail("otro-admin@ua");
+        segundoAdministrador.setPassword("456");
+        segundoAdministrador.setAdministrador(true);
+        usuarioService.registrar(segundoAdministrador);
+
+        assertThat(usuarioService.findByEmail("admin@ua").isAdministrador()).isTrue();
+        assertThat(usuarioService.findByEmail("otro-admin@ua").isAdministrador()).isFalse();
+        assertThat(usuarioService.existeAdministrador()).isTrue();
+    }
+
+    @Test
     public void servicioConsultaUsuarioDevuelveUsuario() {
         // GIVEN
         // Un usuario en la BD
