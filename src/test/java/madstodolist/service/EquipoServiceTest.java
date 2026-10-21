@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Sql(scripts = "/clean-db.sql")
@@ -74,5 +75,21 @@ public class EquipoServiceTest {
         assertThat(equipos).hasSize(2);
         assertThat(equipos.get(0).getNombre()).isEqualTo("Proyecto 1");
         assertThat(equipos.get(1).getNombre()).isEqualTo("Proyecto 2");
+    }
+
+    @Test
+    public void comprobarExcepciones() {
+        assertThatThrownBy(() -> equipoService.recuperarEquipo(1L))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.añadirUsuarioAEquipo(1L, 1L))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.usuariosEquipo(1L))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.equiposUsuario(1L))
+                .isInstanceOf(EquipoServiceException.class);
+
+        EquipoData equipo = equipoService.crearEquipo("Proyecto 1");
+        assertThatThrownBy(() -> equipoService.añadirUsuarioAEquipo(equipo.getId(), 1L))
+                .isInstanceOf(EquipoServiceException.class);
     }
 }

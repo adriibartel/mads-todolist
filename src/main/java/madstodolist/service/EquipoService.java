@@ -35,8 +35,9 @@ public class EquipoService {
 
     @Transactional(readOnly = true)
     public EquipoData recuperarEquipo(Long id) {
-        Equipo equipo = equipoRepository.findById(id).orElse(null);
-        return equipo == null ? null : modelMapper.map(equipo, EquipoData.class);
+        Equipo equipo = equipoRepository.findById(id)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + id));
+        return modelMapper.map(equipo, EquipoData.class);
     }
 
     @Transactional(readOnly = true)
@@ -49,14 +50,17 @@ public class EquipoService {
 
     @Transactional
     public void añadirUsuarioAEquipo(Long idEquipo, Long idUsuario) {
-        Equipo equipo = equipoRepository.findById(idEquipo).orElse(null);
-        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        Equipo equipo = equipoRepository.findById(idEquipo)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + idEquipo));
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new EquipoServiceException("No existe el usuario " + idUsuario));
         equipo.addUsuario(usuario);
     }
 
     @Transactional(readOnly = true)
     public List<UsuarioData> usuariosEquipo(Long id) {
-        Equipo equipo = equipoRepository.findById(id).orElse(null);
+        Equipo equipo = equipoRepository.findById(id)
+                .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + id));
         return equipo.getUsuarios().stream()
                 .map(usuario -> modelMapper.map(usuario, UsuarioData.class))
                 .collect(Collectors.toList());
@@ -64,7 +68,8 @@ public class EquipoService {
 
     @Transactional(readOnly = true)
     public List<EquipoData> equiposUsuario(Long idUsuario) {
-        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new EquipoServiceException("No existe el usuario " + idUsuario));
         return usuario.getEquipos().stream()
                 .map(equipo -> modelMapper.map(equipo, EquipoData.class))
                 .sorted(Comparator.comparing(EquipoData::getNombre))
