@@ -32,11 +32,13 @@ public class HomeController {
         if (usuarioId == null) {
             return "redirect:/login";
         }
-        else {
-            cargarUsuarioSesion(model);
-            model.addAttribute("usuarios", usuarioService.findAll());
-            return "listaUsuarios";
+        UsuarioData usuario = usuarioService.findById(usuarioId);
+        if (usuario == null || !usuario.isAdministrador()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos suficientes");
         }
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("usuarios", usuarioService.findAll());
+        return "listaUsuarios";
     }
 
     @GetMapping("/registrados/{id}")
@@ -44,16 +46,18 @@ public class HomeController {
         Long usuarioId = managerUserSession.usuarioLogeado();
         if (usuarioId == null) {
             return "redirect:/login";
-        } else {
-            cargarUsuarioSesion(model);
-            UsuarioData usuario = usuarioService.findById(id);
-            if (usuario == null) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-            }
-            model.addAttribute("usuarioDescrito", usuario);
-            return "descripcionUsuario";
-
         }
+        UsuarioData usuarioSesion = usuarioService.findById(usuarioId);
+        if (usuarioSesion == null || !usuarioSesion.isAdministrador()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos suficientes");
+        }
+        UsuarioData usuario = usuarioService.findById(id);
+        if (usuario == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        model.addAttribute("usuario", usuarioSesion);
+        model.addAttribute("usuarioDescrito", usuario);
+        return "descripcionUsuario";
     }
 
     private void cargarUsuarioSesion(Model model) {
