@@ -20,6 +20,6 @@ public class AcercaDeWebTest {
     @Test
     public void getAboutDevuelveNombreAplicacion() throws Exception {
         this.mockMvc.perform(get("/about"))
-                .andExpect(content().string(containsString("ToDoList incorrecto")));
+                .andExpect(content().string(containsString("ToDoList")));
     }
 }
