@@ -1,6 +1,7 @@
 package madstodolist.repository;
 
 import madstodolist.model.Equipo;
+import madstodolist.model.Usuario;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +16,9 @@ public class EquipoTest {
 
     @Autowired
     private EquipoRepository equipoRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Test
     public void crearEquipo() {
@@ -52,5 +56,23 @@ public class EquipoTest {
 
         assertThat(equipo1).isEqualTo(equipo2);
         assertThat(equipo2).isNotEqualTo(equipo3);
+    }
+
+    @Test
+    @Transactional
+    public void comprobarRelacionBaseDatos() {
+        Equipo equipo = new Equipo("Proyecto 1");
+        equipoRepository.save(equipo);
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+
+        equipo.addUsuario(usuario);
+
+        Equipo equipoBD = equipoRepository.findById(equipo.getId()).orElse(null);
+        Usuario usuarioBD = usuarioRepository.findById(usuario.getId()).orElse(null);
+        assertThat(equipoBD).isNotNull();
+        assertThat(usuarioBD).isNotNull();
+        assertThat(equipo.getUsuarios()).hasSize(1).contains(usuario);
+        assertThat(usuario.getEquipos()).hasSize(1).contains(equipo);
     }
 }
