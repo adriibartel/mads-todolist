@@ -93,6 +93,16 @@ public class EquipoServiceTest {
     }
 
     @Test
+    public void cambiarNombreEquipoActualizaElNombreRecuperado() {
+        EquipoData equipo = equipoService.crearEquipo("Proyecto anterior");
+
+        equipoService.cambiarNombreEquipo(equipo.getId(), "Proyecto actual");
+
+        assertThat(equipoService.recuperarEquipo(equipo.getId()).getNombre())
+                .isEqualTo("Proyecto actual");
+    }
+
+    @Test
     public void comprobarExcepciones() {
         assertThatThrownBy(() -> equipoService.recuperarEquipo(1L))
                 .isInstanceOf(EquipoServiceException.class);
