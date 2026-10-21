@@ -45,6 +45,7 @@ public class UsuarioWebTest {
         UsuarioData ana = new UsuarioData();
         ana.setId(1L);
         ana.setEmail("ana@example.com");
+        ana.setAdministrador(true);
         UsuarioData juan = new UsuarioData();
         juan.setId(2L);
         juan.setEmail("juan@example.com");
@@ -70,9 +71,21 @@ public class UsuarioWebTest {
     }
 
     @Test
+    public void listaUsuariosRegistradosDevuelve403SiElUsuarioNoEsAdministrador() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(1L);
+        usuario.setAdministrador(false);
+        when(usuarioService.findById(1L)).thenReturn(usuario);
+
+        mockMvc.perform(get("/registrados").sessionAttr("idUsuarioLogeado", 1L))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void descripcionUsuarioMuestraTodosLosDatosSalvoLaContrasena() throws Exception {
         UsuarioData usuarioSesion = new UsuarioData();
         usuarioSesion.setId(7L);
+        usuarioSesion.setAdministrador(true);
         UsuarioData usuario = new UsuarioData();
         usuario.setId(3L);
         usuario.setEmail("usuario@example.com");
@@ -100,9 +113,21 @@ public class UsuarioWebTest {
     }
 
     @Test
+    public void descripcionUsuarioDevuelve403SiElUsuarioNoEsAdministrador() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(7L);
+        usuario.setAdministrador(false);
+        when(usuarioService.findById(7L)).thenReturn(usuario);
+
+        mockMvc.perform(get("/registrados/3").sessionAttr("idUsuarioLogeado", 7L))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void descripcionUsuarioInexistenteDevuelve404() throws Exception {
         UsuarioData usuarioSesion = new UsuarioData();
         usuarioSesion.setId(7L);
+        usuarioSesion.setAdministrador(true);
         when(usuarioService.findById(7L)).thenReturn(usuarioSesion);
         when(usuarioService.findById(99L)).thenReturn(null);
 
@@ -116,6 +141,7 @@ public class UsuarioWebTest {
         ana.setId(7L);
         ana.setEmail("ana@example.com");
         ana.setNombre("Ana García");
+        ana.setAdministrador(true);
         when(usuarioService.findById(7L)).thenReturn(ana);
         when(usuarioService.findAll()).thenReturn(Arrays.asList());
 
