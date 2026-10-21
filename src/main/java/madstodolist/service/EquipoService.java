@@ -29,6 +29,7 @@ public class EquipoService {
 
     @Transactional
     public EquipoData crearEquipo(String nombre) {
+        validarNombre(nombre);
         Equipo equipo = new Equipo(nombre);
         return modelMapper.map(equipoRepository.save(equipo), EquipoData.class);
     }
@@ -87,6 +88,7 @@ public class EquipoService {
 
     @Transactional
     public void modificarNombreEquipo(Long id, String nombre) {
+        validarNombre(nombre);
         Equipo equipo = equipoRepository.findById(id)
                 .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + id));
         equipo.setNombre(nombre);
@@ -97,5 +99,11 @@ public class EquipoService {
         Equipo equipo = equipoRepository.findById(id)
                 .orElseThrow(() -> new EquipoServiceException("No existe el equipo " + id));
         equipoRepository.delete(equipo);
+    }
+
+    private void validarNombre(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new EquipoServiceException("El nombre del equipo no puede estar vacío");
+        }
     }
 }

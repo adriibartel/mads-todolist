@@ -119,6 +119,15 @@ public class EquipoServiceTest {
     }
 
     @Test
+    public void nombreVacioNoEsValido() {
+        assertThatThrownBy(() -> equipoService.crearEquipo(" "))
+                .isInstanceOf(EquipoServiceException.class);
+        EquipoData equipo = equipoService.crearEquipo("Proyecto 1");
+        assertThatThrownBy(() -> equipoService.modificarNombreEquipo(equipo.getId(), " "))
+                .isInstanceOf(EquipoServiceException.class);
+    }
+
+    @Test
     public void eliminarEquipoLimpiaSusRelaciones() {
         UsuarioData usuario = new UsuarioData();
         usuario.setEmail("user@ua");
