@@ -177,4 +177,24 @@ public class UsuarioServiceTest {
                 .containsExactlyInAnyOrder("user@ua", "segundo@ua");
         assertThat(usuarios).allSatisfy(usuario -> assertThat(usuario.getId()).isNotNull());
     }
+
+    @Test
+    public void soloPuedeRegistrarseUnAdministrador() {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setEmail("admin@ua");
+        administrador.setPassword("admin");
+        administrador.setAdministrador(true);
+
+        UsuarioData registrado = usuarioService.registrar(administrador);
+
+        assertThat(registrado.isAdministrador()).isTrue();
+        assertThat(usuarioService.administradorExiste()).isTrue();
+
+        UsuarioData segundoAdministrador = new UsuarioData();
+        segundoAdministrador.setEmail("admin2@ua");
+        segundoAdministrador.setPassword("admin");
+        segundoAdministrador.setAdministrador(true);
+        Assertions.assertThrows(UsuarioServiceException.class,
+                () -> usuarioService.registrar(segundoAdministrador));
+    }
 }

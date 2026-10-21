@@ -3,6 +3,7 @@ package madstodolist.controller;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.UsuarioService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -151,6 +153,54 @@ public class UsuarioWebTest {
                         .param("password", "12345678"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/usuarios/1/tareas"));
+    }
+
+    @Test
+    public void loginAdministradorRedirigeAlListadoDeUsuarios() throws Exception {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setId(2L);
+        administrador.setAdministrador(true);
+        when(usuarioService.login("admin@ua", "123"))
+                .thenReturn(UsuarioService.LoginStatus.LOGIN_OK);
+        when(usuarioService.findByEmail("admin@ua")).thenReturn(administrador);
+
+        mockMvc.perform(post("/login").param("eMail", "admin@ua").param("password", "123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/registrados"));
+    }
+
+    @Test
+    public void formularioRegistroMuestraCheckboxCuandoNoHayAdministrador() throws Exception {
+        when(usuarioService.administradorExiste()).thenReturn(false);
+
+        mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Registrarse como administrador")));
+    }
+
+    @Test
+    public void formularioRegistroOcultaCheckboxSiYaHayAdministrador() throws Exception {
+        when(usuarioService.administradorExiste()).thenReturn(true);
+
+        mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Registrarse como administrador"))));
+    }
+
+    @Test
+    public void registroPuedeCrearElAdministradorDisponible() throws Exception {
+        when(usuarioService.administradorExiste()).thenReturn(false);
+
+        mockMvc.perform(post("/registro")
+                        .param("email", "admin@ua")
+                        .param("password", "123")
+                        .param("administrador", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+
+        ArgumentCaptor<UsuarioData> usuarioCaptor = ArgumentCaptor.forClass(UsuarioData.class);
+        verify(usuarioService).registrar(usuarioCaptor.capture());
+        org.junit.jupiter.api.Assertions.assertTrue(usuarioCaptor.getValue().isAdministrador());
     }
 
     @Test
