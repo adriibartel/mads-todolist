@@ -55,6 +55,11 @@ public class Equipo {
         usuario.getEquipos().add(this);
     }
 
+    public void removeUsuario(Usuario usuario) {
+        usuarios.remove(usuario);
+        usuario.getEquipos().remove(this);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
