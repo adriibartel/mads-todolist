@@ -16,6 +16,7 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -49,6 +50,7 @@ public class UsuarioWebTest {
         UsuarioData juan = new UsuarioData();
         juan.setId(2L);
         juan.setEmail("juan@example.com");
+        juan.setBloqueado(true);
         when(usuarioService.findById(1L)).thenReturn(ana);
         when(usuarioService.findAll()).thenReturn(Arrays.asList(ana, juan));
 
@@ -60,7 +62,9 @@ public class UsuarioWebTest {
                 .andExpect(content().string(containsString("ana@example.com")))
                 .andExpect(content().string(containsString("juan@example.com")))
                 .andExpect(content().string(containsString("/registrados/1")))
-                .andExpect(content().string(containsString("/registrados/2")));
+                .andExpect(content().string(containsString("/registrados/2")))
+                .andExpect(content().string(containsString("Bloquear")))
+                .andExpect(content().string(containsString("Habilitar")));
     }
 
     @Test
@@ -121,6 +125,34 @@ public class UsuarioWebTest {
 
         mockMvc.perform(get("/registrados/3").sessionAttr("idUsuarioLogeado", 7L))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void administradorPuedeAlternarBloqueoDeUsuario() throws Exception {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setId(1L);
+        administrador.setAdministrador(true);
+        when(usuarioService.findById(1L)).thenReturn(administrador);
+        when(usuarioService.alternarBloqueo(2L)).thenReturn(new UsuarioData());
+
+        mockMvc.perform(post("/registrados/2/bloqueo").sessionAttr("idUsuarioLogeado", 1L))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/registrados"));
+
+        verify(usuarioService).alternarBloqueo(2L);
+    }
+
+    @Test
+    public void usuarioNoAdministradorNoPuedeAlternarBloqueo() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(1L);
+        usuario.setAdministrador(false);
+        when(usuarioService.findById(1L)).thenReturn(usuario);
+
+        mockMvc.perform(post("/registrados/2/bloqueo").sessionAttr("idUsuarioLogeado", 1L))
+                .andExpect(status().isForbidden());
+
+        verify(usuarioService, never()).alternarBloqueo(2L);
     }
 
     @Test
@@ -278,5 +310,17 @@ public class UsuarioWebTest {
                         .param("eMail","ana.garcia@gmail.com")
                         .param("password","000"))
                 .andExpect(content().string(containsString("Contraseña incorrecta")));
+    }
+
+    @Test
+    public void servicioLoginUsuarioBloqueadoMuestraError() throws Exception {
+        when(usuarioService.login("bloqueado@example.com", "12345678"))
+                .thenReturn(UsuarioService.LoginStatus.USER_BLOCKED);
+
+        mockMvc.perform(post("/login")
+                        .param("eMail", "bloqueado@example.com")
+                        .param("password", "12345678"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("El usuario está bloqueado")));
     }
 }
