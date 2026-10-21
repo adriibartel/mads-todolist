@@ -7,10 +7,12 @@ import madstodolist.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 public class EquipoController {
@@ -66,11 +68,37 @@ public class EquipoController {
         return "redirect:/equipos";
     }
 
+    @PostMapping("/equipos/{id}/nombre")
+    public String modificarNombreEquipo(@PathVariable Long id, @RequestParam String nombre) {
+        if (!comprobarAdministrador()) return "redirect:/login";
+        equipoService.modificarNombreEquipo(id, nombre);
+        return "redirect:/equipos";
+    }
+
+    @PostMapping("/equipos/{id}/eliminar")
+    public String eliminarEquipo(@PathVariable Long id) {
+        if (!comprobarAdministrador()) return "redirect:/login";
+        equipoService.eliminarEquipo(id);
+        return "redirect:/equipos";
+    }
+
     private void cargarUsuarioSesion(Model model) {
+        model.addAttribute("administrador", false);
         Long usuarioId = managerUserSession.usuarioLogeado();
         if (usuarioId != null) {
             UsuarioData usuario = usuarioService.findById(usuarioId);
             model.addAttribute("usuario", usuario);
+            model.addAttribute("administrador", usuario != null && usuario.isAdministrador());
         }
+    }
+
+    private boolean comprobarAdministrador() {
+        Long usuarioId = managerUserSession.usuarioLogeado();
+        if (usuarioId == null) return false;
+        UsuarioData usuario = usuarioService.findById(usuarioId);
+        if (usuario == null || !usuario.isAdministrador()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        return true;
     }
 }
