@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="610" viewBox="0 0 1040 610">
+  <rect width="1040" height="610" fill="#f6f8fa"/>
+  <text x="48" y="54" fill="#1f2328" font-family="Arial, sans-serif" font-size="28" font-weight="bold">Base de datos PostgreSQL · mads</text>
+  <text x="48" y="84" fill="#59636e" font-family="Arial, sans-serif" font-size="16">Tablas presentes en el esquema public</text>
+
+  <g stroke="#57606a" stroke-width="3" fill="none">
+    <path d="M330 220 H430"/>
+    <path d="M610 220 H710"/>
+    <path d="M520 320 V400"/>
+  </g>
+  <g fill="#57606a" font-family="Arial, sans-serif" font-size="14">
+    <text x="352" y="209">fk_equipo</text>
+    <text x="637" y="209">fk_usuario</text>
+    <text x="532" y="370">usuario_id</text>
+  </g>
+
+  <g font-family="Arial, sans-serif">
+    <rect x="70" y="150" width="260" height="190" rx="8" fill="#ffffff" stroke="#0969da" stroke-width="2"/>
+    <path d="M70 158 Q70 150 78 150 H322 Q330 150 330 158 V198 H70 Z" fill="#ddf4ff"/>
+    <text x="94" y="182" fill="#0550ae" font-size="20" font-weight="bold">equipos</text>
+    <text x="94" y="232" fill="#1f2328" font-size="16">id · PK</text>
+    <text x="94" y="263" fill="#1f2328" font-size="16">nombre</text>
+    <text x="94" y="312" fill="#59636e" font-size="13">Entidad Equipo</text>
+
+    <rect x="430" y="150" width="180" height="170" rx="8" fill="#ffffff" stroke="#8250df" stroke-width="2"/>
+    <path d="M430 158 Q430 150 438 150 H602 Q610 150 610 158 V198 H430 Z" fill="#fbefff"/>
+    <text x="449" y="182" fill="#6639ba" font-size="17" font-weight="bold">equipo_usuario</text>
+    <text x="450" y="237" fill="#1f2328" font-size="15">fk_equipo · FK</text>
+    <text x="450" y="270" fill="#1f2328" font-size="15">fk_usuario · FK</text>
+    <text x="450" y="300" fill="#59636e" font-size="13">Tabla de unión N:M</text>
+
+    <rect x="710" y="150" width="260" height="220" rx="8" fill="#ffffff" stroke="#1a7f37" stroke-width="2"/>
+    <path d="M710 158 Q710 150 718 150 H962 Q970 150 970 158 V198 H710 Z" fill="#dafbe1"/>
+    <text x="734" y="182" fill="#116329" font-size="20" font-weight="bold">usuarios</text>
+    <text x="734" y="232" fill="#1f2328" font-size="16">id · PK</text>
+    <text x="734" y="263" fill="#1f2328" font-size="16">email</text>
+    <text x="734" y="294" fill="#1f2328" font-size="16">administrador · bloqueado</text>
+    <text x="734" y="341" fill="#59636e" font-size="13">Entidad Usuario</text>
+
+    <rect x="390" y="400" width="260" height="160" rx="8" fill="#ffffff" stroke="#bf8700" stroke-width="2"/>
+    <path d="M390 408 Q390 400 398 400 H642 Q650 400 650 408 V448 H390 Z" fill="#fff1e5"/>
+    <text x="414" y="432" fill="#7d4e00" font-size="20" font-weight="bold">tareas</text>
+    <text x="414" y="482" fill="#1f2328" font-size="16">id · PK</text>
+    <text x="414" y="513" fill="#1f2328" font-size="16">titulo · usuario_id FK</text>
+    <text x="414" y="542" fill="#59636e" font-size="13">Cada tarea pertenece a un usuario</text>
+  </g>
+</svg>
