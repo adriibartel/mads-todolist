@@ -10,12 +10,20 @@
         <tr>
             <th>Identificador</th>
             <th>Correo electrónico</th>
+            <th>Acción</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="usuario : ${usuarios}">
             <td><a th:href="@{/registrados/{id}(id=${usuario.id})}" th:text="${usuario.id}"></a></td>
             <td th:text="${usuario.email}"></td>
+            <td>
+                <form method="post" th:action="@{/registrados/{id}/bloqueo(id=${usuario.id})}">
+                    <button type="submit" class="btn btn-sm"
+                            th:classappend="${usuario.bloqueado} ? 'btn-success' : 'btn-warning'"
+                            th:text="${usuario.bloqueado} ? 'Habilitar' : 'Bloquear'"></button>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>
