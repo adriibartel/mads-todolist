@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   launch-tests:
     runs-on: ubuntu-latest
-    container: eclipse-temurin:8-jdk-alpine
+    container: amazoncorretto:8-alpine-jdk
     steps:
       - uses: actions/checkout@v4
       - name: Launch tests with Maven
